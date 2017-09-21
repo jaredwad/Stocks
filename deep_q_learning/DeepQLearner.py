@@ -30,10 +30,12 @@ class DeepQLearner:
     #     s = s'
     # until terminated
 
-    def __init__(self, original_model, environment, max_memory_size=500, epsilon=.1, epsilon_decay=.95, discount=.9, sample_size=50):
+    def __init__(self, original_model, environment, input_shape, max_memory_size=500, epsilon=.1, epsilon_decay=.95, discount=.9, sample_size=50):
         self.Q_model = original_model
         self.action_space = environment.action_space
         self.environment = environment
+
+        self.input_shape = input_shape
 
         self.memories = list()
         self.max_memory_size = max_memory_size
@@ -72,7 +74,7 @@ class DeepQLearner:
         return np.array(x_batch), np.array(y_batch)
 
     def predict_reward(self, state):
-        return self.Q_model.predict(np.reshape(state, [1, 4]))[0]
+        return self.Q_model.predict(np.reshape(state, self.input_shape))[0]
 
     def train_network(self):
         inputs, targets = self.sample_actions()
@@ -88,6 +90,9 @@ class DeepQLearner:
             input_t = self.environment.reset()
 
             cumulative_reward = 0.
+            true_reward = 0.
+
+            num_steps = 0
 
             while not game_over:
                 input_tm1 = input_t
@@ -99,40 +104,50 @@ class DeepQLearner:
                 input_t, reward, game_over, _ = self.act(action)
                 self.environment.render()
 
+                true_reward += reward
+
+                if e > 50:
+                    time_punishment = np.floor(np.power(num_steps / 200, 1.2))
+                    reward -= time_punishment
+
                 # store experience
                 self.store_memory(input_tm1, action, reward, input_t, game_over)
 
-                self.epsilon *= self.epsilon_decay
+                self.train_network()
 
-                loss += self.train_network()
                 cumulative_reward += reward
-            print("Epoch {:03d}/{} | Loss {:.4f} | Reward {:4f}".format(e, num_epochs - 1, loss, cumulative_reward))
+
+                num_steps += 1
+
+            print("Epoch {:03d}/{} | Steps {} | Reward {:4f} | True Reward {:4f}"
+                  .format(e, num_epochs - 1, num_steps, cumulative_reward, true_reward))
+            self.epsilon *= self.epsilon_decay
 
 
 if __name__ == '__main__':
-    epsilon = .5  # exploration
+    epsilon = .7  # exploration
     num_actions = 3  # [move_left, stay, move_right]
     epoch = 1000
-    max_memory = 500
+    max_memory = 500000
     hidden_size = 100
     batch_size = 50
     grid_size = 10
     discount = .9
 
-    env = gym.make('CartPole-v0')
+    env = gym.make('LunarLander-v2')
 
     tmp_state = env.reset()
 
     model = Sequential()
-    model.add(Dense(24, input_dim=4, activation='tanh'))
+    model.add(Dense(24, input_shape=env.observation_space.shape, activation='tanh'))
     model.add(Dense(48, activation='tanh'))
-    model.add(Dense(2, activation='linear'))
-    model.compile(loss='mse', optimizer=Adam(lr=0.01, decay=0.01))
+    model.add(Dense(4, activation='linear'))
+    model.compile(loss='mse', optimizer=Adam(lr=0.001))
 
     # Define environment/game
     # env = Catch(grid_size)
 
-    learner = DeepQLearner(model, env, epsilon=epsilon, max_memory_size=max_memory
+    learner = DeepQLearner(model, env, [1, 8], epsilon=epsilon, max_memory_size=max_memory
                            , sample_size=batch_size, discount=discount)
 
     learner.run(num_epochs=epoch)
