@@ -106,3 +106,12 @@ ENV/
 */img/*
 
 data/data.csv
+deep_q_learning/model.json
+
+deep_q_learning/model.h5
+
+deep_q_learning/qlearn.py
+
+deep_q_learning/test.py
+
+research.ipynb
