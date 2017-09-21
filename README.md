@@ -6,44 +6,48 @@ September 15st, 2017
 ## Proposal
 
 ### Domain Background
+Almost since the dawn of Machine Learning and Artificial Intelligence researchers and scientists have been trying to teach machines through Reinforcement Learning (RL). This field of AI was originally inspired by Behaviorist Psychology. Specifically it deals with how an agent chooses actions in an environment to maximize some reward. Generally this problem is captured as a Markov Decision Process which uses a (state, action reward, next_action) tuple. Historically researchers have often used RL to play games such as Chess, Go, or even various Atari games, however some more concrete examples of some applications of RL include: Self Driving Cars, and investing in the Stock Market.
 
+With the advancements made in Deep Learning there has been a renewed interest in RL in what has been called Deep RL. Using these techniques computers have been able to beat the Grandmasters of Chess and Go, and the best gamers at the Atari. It has also made self driving cars a reality.
+
+On a personal note, ever since I first learned about reinforcement learning it has always peaked my interest. To me it is the most fun side of AI. I also believe that it has the greatest potential to change our lives, and help us solve many of the problems of today.
 
 ### Problem Statement
 _(approx. 1 paragraph)_
 
-In this section, clearly describe the problem that is to be solved. The problem described should be well defined and should have at least one relevant potential solution. Additionally, describe the problem thoroughly such that it is clear that the problem is quantifiable (the problem can be expressed in mathematical or logical terms) , measurable (the problem can be measured by some metric and clearly observed), and replicable (the problem can be reproduced and occurs more than once).
+https://gym.openai.com/envs/LunarLander-v2/
+
+The problem which I will solve is a game called Lunar Lander. The basic idea of this game is that the lunar lander is coming in for landing, and the agent gets to control its thrusters taking one of four possible actions (left, right, main, none). The agent must land the lander in the specified location on the ground without crashing the lander. Rewards for the agent include landing softly in the specified location (100 - 140 points), crashing (-100 points), landing softly (100 points), Leg ground contact (10 points each), Firing Main engine (-0.3 points per frame). The agent wins if it scores over 200 points.
 
 ### Datasets and Inputs
 _(approx. 2-3 paragraphs)_
 
-In this section, the dataset(s) and/or input(s) being considered for the project should be thoroughly described, such as how they relate to the problem and why they should be used. Information such as how the dataset or input is (was) obtained, and the characteristics of the dataset or input, should be included with relevant references and citations as necessary It should be clear how the dataset(s) or input(s) will be used in the project and whether their use is appropriate given the context of the problem.
+At each step, or frame, of the game the agent receives an array with 8 values corresponding to its location, orientation, and velocity. Combined these are referred to as the "State". Each of these is necessary to allow the agent to navigate down to the landing zone. These inputs come from the OpenAI Gym environment. 
+
+At each frame the agent will take an action, and then receive a reward from the environment (as described above). Using this (state, action, reward, next_state) tuple, the agent is able to determine how effective each action was, and then optimize itself to always choose the best action each frame so that it is able to land softly in the landing zone.
 
 ### Solution Statement
 _(approx. 1 paragraph)_
 
-In this section, clearly describe a solution to the problem. The solution should be applicable to the project domain and appropriate for the dataset(s) or input(s) given. Additionally, describe the solution thoroughly such that it is clear that the solution is quantifiable (the solution can be expressed in mathematical or logical terms) , measurable (the solution can be measured by some metric and clearly observed), and replicable (the solution can be reproduced and occurs more than once).
+An agent is said to have solved this problem if it is able to score an average of greater than 200 points over a period of 100 iterations (games).
 
 ### Benchmark Model
 _(approximately 1-2 paragraphs)_
 
-In this section, provide the details for a benchmark model or result that relates to the domain, problem statement, and intended solution. Ideally, the benchmark model or result contextualizes existing methods or known information in the domain and problem given, which could then be objectively compared to the solution. Describe how the benchmark model or result is measurable (can be measured by some metric and clearly observed) with thorough detail.
+A common solution to this type of problem is Q Learning. This however doesn't work because of the continuous values used in the state array it becomes impossible to build a Q table. One solution to this problem is to discretize the state array. By discretizing the state array the agent is able to build a proper Q table and learn a valid policy. This then can be compared to my solution through the metrics described below.
 
 ### Evaluation Metrics
 _(approx. 1-2 paragraphs)_
 
-In this section, propose at least one evaluation metric that can be used to quantify the performance of both the benchmark model and the solution model. The evaluation metric(s) you propose should be appropriate given the context of the data, the problem statement, and the intended solution. Describe how the evaluation metric(s) are derived and provide an example of their mathematical representations (if applicable). Complex evaluation metrics should be clearly defined and quantifiable (can be expressed in mathematical or logical terms).
+The metric of success will be the fewest number of iterations (games) until the algorithm solves the problem. For example if it takes algorithm A 10,000 iterations to solve it, and it takes algorithm B 9,000 iterations, then algorithm B is said to be better than algorithm A.
 
 ### Project Design
 _(approx. 1 page)_
 
-In this final section, summarize a theoretical workflow for approaching a solution given the problem. Provide thorough discussion for what strategies you may consider employing, what analysis of the data might be required before being used, or which algorithms will be considered for your implementation. The workflow and discussion that you provide should align with the qualities of the previous sections. Additionally, you are encouraged to include small visualizations, pseudocode, or diagrams to aid in describing the project design, but it is not required. The discussion should clearly outline your intended workflow of the capstone project.
+My plan is to start by coding up a simple Q Learner (described in the benchmark session) to use as my benchmark for further testing. After building the benchmark, I will start exploring various other options to see if I can beat it.
 
------------
+I'll then dive into some alternate algorithms such as Deep Q Networks (DQN), Actor-Critic (AC), Asynchronous Actor Critic (A3C), and others. After creating these agents, I'll compare them to the benchmark algorithm as described in the metrics section. After testing each of them, I will select the best one and move on to the next step.
 
-**Before submitting your proposal, ask yourself. . .**
+After choosing an algorithm, I'll continue by altering the things the algorithm learns on. I'll potentially introduce some artificial rewards, or alter the rewards before the agent learns on them. Then I might change some of the items in the state to see if I can get it to learn better, each time comparing it to the previously selected agent.
 
-- Does the proposal you have written follow a well-organized structure similar to that of the project template?
-- Is each section (particularly **Solution Statement** and **Project Design**) written in a clear, concise and specific fashion? Are there any ambiguous terms or phrases that need clarification?
-- Would the intended audience of your project be able to understand your proposal?
-- Have you properly proofread your proposal to assure there are minimal grammatical and spelling mistakes?
-- Are all the resources used for this project correctly cited and referenced?
+Finally I'll run the new agent, and compare it to the benchmark to see how much better it performed. I will then submit my findings, and code to both Udacity and OpenAI.
